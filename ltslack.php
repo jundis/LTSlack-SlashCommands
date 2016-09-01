@@ -17,9 +17,9 @@ if ($exploded[0]=="help")
 $computerurl = NULL; //Set to null just in case.
 
 if(is_numeric($exploded[0])) { //If it detects an ID, set the URL to use ID.
-	$computerurl = $labtech . "/WCC2/api/Computers?$filter=ComputerID eq " . $exploded[0]; //Set ticket API url
+	$computerurl = $labtech . '/WCC2/api/Computers?$filter=ComputerID%20eq%20' . $exploded[0]; //Set ticket API url
 } else {
-	$computerurl = $labtech . "/WCC2/api/Computers?$filter=Name eq '" . $exploded[0] . "'"; //Set the ticket API url to use name search.
+	$computerurl = $labtech . '/WCC2/api/Computers?$filter=Name%20eq%20\'' . $exploded[0] . "'"; //Set the ticket API url to use name search.
 }
 
 $header_data =array(
@@ -53,16 +53,21 @@ $dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW A
 $dataTData = json_decode(json_encode($dataTData->value),true);
 $dataTData = $dataTData[0];
 
+//Last Contact date conversion
+$date=strtotime($dataTData["LastContact"]);
+$dateformat=date('m-d-Y g:i:sa',$date);
+
+$return="Nothing!"; //Just in case
+
 $return =array(
 	"parse" => "full",
 	"response_type" => "in_channel",
 	"attachments"=>array(array(
 		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", //Fallback for notifications
-		"title" => "<" . $ticketurl . $dataTData -> id . "&companyName=" . $companyname . "|#" . $dataTData->id . ">: " . $dataTData->summary, //Return clickable link to ticket with ticket summary.
-		"pretext" => "Info on Ticket #" . $dataTData->id, //Return info string with ticket number.
-		"text" =>  $dataTData->company->identifier . " / " . $contact . //Return "Company / Contact" string
-		"\n" . $dateformat . " | " . $dataTData->status->name . //Return "Date Entered / Status" string
-		"\n" . $dataTData->resources, //Return assigned resources
+		"title" => "Info on System " .  $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", //Return clickable link to ticket with ticket summary.
+		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . date('H:i',mktime(0,$dataTData["UpTime"])) . 
+		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
+		"\nLast User: " . $dataTData["LastUsername"], //Return assigned resources
 		"mrkdwn_in" => array(
 			"text",
 			"pretext"
