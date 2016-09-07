@@ -6,6 +6,8 @@ Based on my similar script https://github.com/jundis/CWSlack-SlashCommands
 
 Type /lt [computer name or computer ID] in chat and it will pull relevant information about the machine.
 
+Type /lt client [client name] in chat and it will pull the specified client's address and phone/fax number
+
 # Installation Instructions
 
 1. Download the ltslack.php file and lt-config.php file.
