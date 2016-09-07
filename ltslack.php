@@ -8,19 +8,31 @@ if(empty($_GET['text'])) die; //If there is no text added, kill the connection.
 
 $exploded = explode(" ",$_GET['text']); //Explode the string attached to the slash command for use in variables.
 
+$url = NULL; //Set to null just in case.
+
 if ($exploded[0]=="help") 
 {
 	$test=json_encode(array("parse" => "full", "response_type" => "in_channel","text" => "Please visit " . $helpurl . " for more help information","mrkdwn"=>true));
 	echo $test;
 	return;
 }
-$computerurl = NULL; //Set to null just in case.
-
-if(is_numeric($exploded[0])) { //If it detects an ID, set the URL to use ID.
-	$computerurl = $labtech . '/WCC2/api/Computers?$filter=ComputerID%20eq%20' . $exploded[0]; //Set ticket API url
-} else {
-	$computerurl = $labtech . '/WCC2/api/Computers?$filter=Name%20eq%20\'' . $exploded[0] . "'"; //Set the ticket API url to use name search.
+if ($exploded[0]=="client" && array_key_exists(1,$exploded))
+{
+	$url = $labtech . '/WCC2/api/Clients?$top=1&$filter=substringof(%27' . $exploded[1] . '%27,Name)';
 }
+else
+{
+	if(is_numeric($exploded[0]))
+	{ //If it detects an ID, set the URL to use ID.
+		$url = $labtech . '/WCC2/api/Computers?$filter=ComputerID%20eq%20' . $exploded[0]; //Set ticket API url
+	} 
+	else
+	{
+		$url = $labtech . '/WCC2/api/Computers?$filter=Name%20eq%20\'' . $exploded[0] . "'"; //Set the ticket API url to use name search.
+	}
+}
+
+
 
 $header_data =array(
  "Authorization: LTToken ". $authorization,
@@ -30,7 +42,7 @@ $ch = curl_init(); //Initiate a curl session_cache_expire
 
 //Create curl array to set the API url, headers, and necessary flags.
 $curlOpts = array(
-	CURLOPT_URL => $computerurl,
+	CURLOPT_URL => $url,
 	CURLOPT_RETURNTRANSFER => true,
 	CURLOPT_HTTPHEADER => $header_data,
 	CURLOPT_FOLLOWLOCATION => true,
@@ -53,18 +65,41 @@ $dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW A
 $dataTData = json_decode(json_encode($dataTData->value),true);
 $dataTData = $dataTData[0];
 
-//Last Contact date conversion
-$date=strtotime($dataTData["LastContact"]);
-$dateformat=date('m-d-Y g:i:sa',$date);
 
 $return="Nothing!"; //Just in case
+if ($exploded[0]=="client" && array_key_exists("Company",$dataTData))
+{
+	$phone=preg_replace('~.*(\d{3})[^\d]{0,7}(\d{3})[^\d]{0,7}(\d{4}).*~', '($1) $2-$3', $dataTData["Phone"]);
+	$fax=preg_replace('~.*(\d{3})[^\d]{0,7}(\d{3})[^\d]{0,7}(\d{4}).*~', '($1) $2-$3', $dataTData["Fax"]);
+	$return =array(
+	"parse" => "full",
+	"response_type" => "in_channel",
+	"attachments"=>array(array(
+		"fallback" => "Info on Client " . $dataTData["Name"], //Fallback for notifications
+		"title" => "Info on Client " .  $dataTData["Company"], 
+		"text" =>  "Phone: " . $phone . " | Fax: " . $fax . 
+		"\n*Address* - <http://maps.google.com/?q=" . $dataTData["Address1"] . " " .  $dataTData["Address2"] . ",". $dataTData["City"] . ", " . $dataTData["State"] . " " . $dataTData["Zip"] . "|Google Maps>" . 
+		"\n" . $dataTData["Address1"] . ", " .  $dataTData["Address2"] .
+		"\n" . $dataTData["City"] . ", " . $dataTData["State"] . " " . $dataTData["Zip"], //Return assigned resources
+		"mrkdwn_in" => array(
+			"text",
+			"pretext"
+			)
+		))
+	);
+}
+else
+{
+	//Last Contact date conversion
+	$date=strtotime($dataTData["LastContact"]);
+	$dateformat=date('m-d-Y g:i:sa',$date);
 
-$return =array(
+	$return =array(
 	"parse" => "full",
 	"response_type" => "in_channel",
 	"attachments"=>array(array(
 		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", //Fallback for notifications
-		"title" => "Info on System " .  $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", //Return clickable link to ticket with ticket summary.
+		"title" => "Info on System " .  $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", 
 		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . date('H:i',mktime(0,$dataTData["UpTime"])) . 
 		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
 		"\nLast User: " . $dataTData["LastUsername"], //Return assigned resources
@@ -74,6 +109,7 @@ $return =array(
 			)
 		))
 	);
+}
 
 echo json_encode($return, JSON_PRETTY_PRINT); //Return properly encoded arrays in JSON for Slack parsing.
 
