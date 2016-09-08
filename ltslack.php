@@ -93,13 +93,23 @@ else
 	//Last Contact date conversion
 	$date=strtotime($dataTData["LastContact"]);
 	$dateformat=date('m-d-Y g:i:sa',$date);
-
+	if(strpos($dataTData["BiosName"],'VMware')!==false)
+	{
+		$hardware = "VMware VM";
+	}
+	else if(strpos($dataTData["BiosName"],'Virtual Machine')!==false)
+	{
+		$hardware = "Hyper-V VM";
+	} else
+	{
+		$hardware = $dataTData["BiosName"];
+	}
 	$return =array(
 	"parse" => "full",
 	"response_type" => "in_channel",
 	"attachments"=>array(array(
-		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", //Fallback for notifications
-		"title" => "Info on System " .  $dataTData["Name"] . " (" . $dataTData["ComputerID"] . ")", 
+		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $hardware . ")", //Fallback for notifications
+		"title" => "Info on System " .  $dataTData["Name"] . " (" . $hardware . ")", 
 		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . date('H:i',mktime(0,$dataTData["UpTime"])) . 
 		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
 		"\nLast User: " . $dataTData["LastUsername"], //Return assigned resources
