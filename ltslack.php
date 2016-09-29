@@ -33,6 +33,38 @@ else
 }
 
 
+$urlapi = $labtech . '/WCC2/API/APIToken';
+
+//CURL for API key
+$ch = curl_init(); //Initiate a curl session_cache_expire
+
+$body = json_encode(array("username" => $ltuser, "password" => $ltpassword));
+//Create curl array to set the API url, headers, and necessary flags.
+$curlOpts = array(
+    CURLOPT_URL => $urlapi,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
+    CURLOPT_POSTFIELDS => $body,
+    CURLOPT_POST => 1,
+    CURLOPT_HEADER => 1,
+);
+curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
+
+$answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
+$headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
+$curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
+
+// If there was an error, show it
+if (curl_error($ch)) {
+    die(curl_error($ch));
+}
+curl_close($ch);
+
+
+$authorization = str_replace('"', "", $curlBodyTData); //Enter your LabTech REST API key here.
+
+
 
 $header_data =array(
  "Authorization: LTToken ". $authorization,

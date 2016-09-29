@@ -4,8 +4,9 @@
 //
 
 $slacktoken = "Slack Token Here"; //Set token from the Slack slash command screen.
-$authorization = "LT API KEY HERE"; //Enter your LabTech REST API key here.
-$labtech = "https://lt.domain.tld" //Enter your LabTech FQDN here.
+$ltuser = "apiuser"; //Enter your LabTech username here.
+$ltpassword = "ENTER PASSWORD"; //Enter your LabTech password here.
+$labtech = "https://lt.domain.tld"; //Enter your LabTech FQDN here.
 $timezone = "America/Chicago"; //Set your timezone here. 
 
 //Change optional
