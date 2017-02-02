@@ -18,7 +18,7 @@ if ($exploded[0]=="help")
 }
 if ($exploded[0]=="client" && array_key_exists(1,$exploded))
 {
-	$url = $labtech . '/WCC2/api/Clients?$top=1&$filter=substringof(%27' . $exploded[1] . '%27,Name)';
+	$url = $labtech . '/WCC2/api/Clients?$top=1&$filter=contains(%27' . $exploded[1] . '%27,Name)';
 }
 else
 {
