@@ -68,16 +68,114 @@ $header_data =array(
  "Authorization: LTToken ". $authorization,
 );
 
-if ($exploded[0]=="test")
+$ch = curl_init(); //Initiate a curl session_cache_expire
+
+//Create curl array to set the API url, headers, and necessary flags.
+$curlOpts = array(
+	CURLOPT_URL => $url,
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_HTTPHEADER => $header_data,
+	CURLOPT_FOLLOWLOCATION => true,
+	CURLOPT_HEADER => 1,
+);
+curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
+
+$answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
+$headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
+$curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
+
+// If there was an error, show it
+if (curl_error($ch)) {
+	die(curl_error($ch));
+}
+curl_close($ch);
+
+//Funky conversion for LT Data.
+$dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW API.
+$dataTData = json_decode(json_encode($dataTData->value),true);
+if(empty($dataTData))
 {
-    $url = "https://lt.test.com/WCC2/api/Computers(1609)/RunScript";
+    die("No computer found named " . $exploded[0]);
+}
+$dataTData = $dataTData[0];
+
+if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run"))
+{
+    $clientstring = $dataTData["Domain"] . '\\' . $dataTData["Name"];
+    if(array_key_exists(2,$exploded))
+    {
+        if(!is_numeric($exploded[2]))
+        {
+            $url = $labtech . '/WCC2/API/ScriptStubs?$filter=contains(ScriptName,%27' . $exploded[2] . '%27)';
+
+            $ch = curl_init(); //Initiate a curl session_cache_expire
+
+            //Create curl array to set the API url, headers, and necessary flags.
+            $curlOpts = array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $header_data,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HEADER => 1,
+            );
+            curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
+
+            $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
+            $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
+            $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
+
+            // If there was an error, show it
+            if (curl_error($ch)) {
+                die(curl_error($ch));
+            }
+            curl_close($ch);
+
+            //Funky conversion for LT Data.
+            $dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW API.
+            $dataTData = json_decode(json_encode($dataTData->value),true);
+            if(empty($dataTData))
+            {
+                die("No script found named " . $exploded[2]);
+            }
+
+            $textreturn = "";
+
+            foreach($dataTData as $script)
+            {
+                $textreturn = $textreturn . $script["ScriptName"] . " | " . $script["ScriptId"] . "\n";
+            }
+
+            $return =array(
+                "parse" => "full",
+                "response_type" => "in_channel",
+                "attachments"=>array(array(
+                    "fallback" => "Script info for $exploded[2]", //Fallback for notifications
+                    "title" => "Scripts for $clientstring",
+                    "text" =>  $textreturn,
+                    "mrkdwn_in" => array(
+                        "text",
+                        "pretext"
+                    )
+                ))
+            );
+
+            die(json_encode($return, JSON_PRETTY_PRINT));
+        }
+    }
+    else
+    {
+        die("No script specified");
+    }
+
+    $url = "https://lt.test.com/WCC2/api/Computers(" . $dataTData["ComputerID"] . ")/RunScript";
     $header_data =array(
         "Authorization: LTToken ". $authorization,
         'Content-Type: application/json'
     );
+
     $ch = curl_init(); //Initiate a curl session_cache_expire
 
-    $body = json_encode(array("ScriptID" => 5897, "NextRun" => gmdate("Y-m-d\TH:i:s-06:00", strtotime("+1 minutes"))));
+    $body = json_encode(array("ScriptID" => $exploded[2], "NextRun" => gmdate("Y-m-d\TH:i:s-06:00", strtotime("+1 minutes"))));
     //Create curl array to set the API url, headers, and necessary flags.
     $curlOpts = array(
         CURLOPT_URL => $url,
@@ -105,34 +203,6 @@ if ($exploded[0]=="test")
 
     die();
 }
-
-$ch = curl_init(); //Initiate a curl session_cache_expire
-
-//Create curl array to set the API url, headers, and necessary flags.
-$curlOpts = array(
-	CURLOPT_URL => $url,
-	CURLOPT_RETURNTRANSFER => true,
-	CURLOPT_HTTPHEADER => $header_data,
-	CURLOPT_FOLLOWLOCATION => true,
-	CURLOPT_HEADER => 1,
-);
-curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-$answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-$headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-$curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-// If there was an error, show it
-if (curl_error($ch)) {
-	die(curl_error($ch));
-}
-curl_close($ch);
-
-//Funky conversion for LT Data.
-$dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW API.
-$dataTData = json_decode(json_encode($dataTData->value),true);
-$dataTData = $dataTData[0];
-
 
 $return="Nothing!"; //Just in case
 if ($exploded[0]=="client" && array_key_exists("Company",$dataTData))
