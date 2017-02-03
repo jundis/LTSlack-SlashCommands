@@ -102,6 +102,7 @@ $dataTData = $dataTData[0];
 if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run"))
 {
     $clientstring = $dataTData["Domain"] . '\\' . $dataTData["Name"];
+    $computerid = $dataTData["ComputerID"];
     if(array_key_exists(2,$exploded))
     {
         if(!is_numeric($exploded[2]))
@@ -167,7 +168,49 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
         die("No script specified");
     }
 
-    $url = "https://lt.test.com/WCC2/api/Computers(" . $dataTData["ComputerID"] . ")/RunScript";
+    //Block to verify script exists
+
+    $url = $labtech . '/WCC2/API/ScriptStubs?$filter=ScriptId%20eq%20' . $exploded[2];
+    $header_data =array(
+        "Authorization: LTToken ". $authorization,
+    );
+
+    $ch = curl_init(); //Initiate a curl session_cache_expire
+
+    //Create curl array to set the API url, headers, and necessary flags.
+    $curlOpts = array(
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $header_data,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HEADER => 1,
+    );
+    curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
+
+    $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
+    $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
+    $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
+
+    // If there was an error, show it
+    if (curl_error($ch)) {
+        die(curl_error($ch));
+    }
+    curl_close($ch);
+
+    //Funky conversion for LT Data.
+    $dataTData = json_decode($curlBodyTData); //Decode the JSON returned by the CW API.
+    $dataTData = json_decode(json_encode($dataTData->value),true);
+    if(empty($dataTData))
+    {
+        die("No script found with ID " . $exploded[2]);
+    }
+    $dataTData = $dataTData[0];
+
+    $scriptstring = $dataTData["ScriptName"];
+
+    //Blcok to actually run script
+
+    $url = $labtech . "/WCC2/api/Computers(" . $computerid . ")/RunScript";
     $header_data =array(
         "Authorization: LTToken ". $authorization,
         'Content-Type: application/json'
@@ -176,6 +219,7 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
     $ch = curl_init(); //Initiate a curl session_cache_expire
 
     $body = json_encode(array("ScriptID" => $exploded[2], "NextRun" => gmdate("Y-m-d\TH:i:s-06:00", strtotime("+1 minutes"))));
+
     //Create curl array to set the API url, headers, and necessary flags.
     $curlOpts = array(
         CURLOPT_URL => $url,
@@ -198,10 +242,17 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
     }
     curl_close($ch);
 
-    var_dump($answerTData);
-    var_dump($curlBodyTData);
+    $dataTData = json_decode($curlBodyTData);
 
-    die();
+    var_dump($dataTData);
+
+    if(array_key_exists("value",$dataTData))
+    {
+        die("Successfully set script " . $scriptstring . " to run on " . $clientstring);
+    }
+
+    var_dump($dataTData);
+    die("Unknown error occurred.");
 }
 
 $return="Nothing!"; //Just in case
