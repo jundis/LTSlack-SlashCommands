@@ -12,10 +12,24 @@ $url = NULL; //Set to null just in case.
 
 if ($exploded[0]=="help") 
 {
-	$test=json_encode(array("parse" => "full", "response_type" => "in_channel","text" => "Please visit " . $helpurl . " for more help information","mrkdwn"=>true));
-	echo $test;
-	return;
+	die(json_encode(array("parse" => "full", "response_type" => "in_channel","text" => "Please visit " . $helpurl . " for more help information","mrkdwn"=>true)));
 }
+
+//Timeout Fix Block
+if($timeoutfix == true)
+{
+    ob_end_clean();
+    header("Connection: close");
+    ob_start();
+    echo ('{"response_type": "in_channel"}');
+    $size = ob_get_length();
+    header("Content-Length: $size");
+    ob_end_flush();
+    flush();
+    session_write_close();
+}
+//End timeout fix block
+
 if ($exploded[0]=="client" && array_key_exists(1,$exploded))
 {
 	$url = $labtech . '/WCC2/api/Clients?$top=1&$filter=contains(%27' . $exploded[1] . '%27,Name)';
@@ -248,11 +262,47 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
 
     if(array_key_exists("value",$dataTData))
     {
+        if ($timeoutfix == true) {
+            $return = array("parse" => "full", "response_type" => "ephemeral","text" => "Successfully set script " . $scriptstring . " to run on " . $clientstring);
+        } else {
+            die("Successfully set script " . $scriptstring . " to run on " . $clientstring);
+        }
         die("Successfully set script " . $scriptstring . " to run on " . $clientstring);
     }
 
     var_dump($dataTData);
-    die("Unknown error occurred.");
+    if ($timeoutfix == true) {
+        $return = array("parse" => "full", "response_type" => "ephemeral","text" => "Unknown error occurred. Turn timeoutfix to false in lt-config.php and try again");
+    } else {
+        die("Unknown error occurred. Turn timeoutfix to false in lt-config.php and try again");
+    }
+    //Slack Post
+    $ch = curl_init(); //Initiate a curl session_cache_expire
+    $header_data = array("Content-type: application/json");
+    $body = json_encode($return);
+
+    //Create curl array to set the API url, headers, and necessary flags.
+    $curlOpts = array(
+        CURLOPT_URL => $_GET["response_url"],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTPHEADER => $header_data,
+        CURLOPT_POSTFIELDS => $body,
+        CURLOPT_POST => 1,
+        CURLOPT_HEADER => 1,
+    );
+    curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
+
+    $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
+    $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
+    $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
+
+    // If there was an error, show it
+    if (curl_error($ch)) {
+        die(curl_error($ch));
+    }
+    curl_close($ch);
+    die();
 }
 
 $return="Nothing!"; //Just in case

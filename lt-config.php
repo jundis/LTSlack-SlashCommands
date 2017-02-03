@@ -7,7 +7,8 @@ $slacktoken = "Slack Token Here"; //Set token from the Slack slash command scree
 $ltuser = "apiuser"; //Enter your LabTech username here.
 $ltpassword = "ENTER PASSWORD"; //Enter your LabTech password here.
 $labtech = "https://lt.domain.tld"; //Enter your LabTech FQDN here.
-$timezone = "America/Chicago"; //Set your timezone here. 
+$timezone = "America/Chicago"; //Set your timezone here.
+$timeoutfix = true; //Only change if you have issues with this posting to Slack.
 
 //Change optional
 $helpurl = "https://github.com/jundis/LTSlack-SlashCommands"; //Set your help article URL here.
