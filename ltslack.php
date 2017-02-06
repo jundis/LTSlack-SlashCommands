@@ -358,13 +358,32 @@ else
 	{
 		$hardware = $dataTData["BiosName"];
 	}
+
+	if($dataTData["UpTime"]>=1440)
+    {
+        $updays = floor($dataTData["UpTime"] / 1440);
+        $uphours = floor(($dataTData["UpTime"] - $updays * 1440) / 60);
+        $upminutes = $dataTData["UpTime"] - $updays * 1440 - $uphours * 60;
+        $uptime = $updays . "d:" . $uphours . "h:" . $upminutes . "m";
+    }
+    else if ($dataTData["UpTime"]<1440 && $dataTData["UpTime"]>=60)
+    {
+        $uphours = floor($dataTData["UpTime"] / 60);
+        $upminutes = $dataTData["UpTime"] - $uphours * 60;
+        $uptime = $uphours . "h:" . $upminutes . "m";
+    }
+    else
+    {
+        $uptime = $dataTData["UpTime"] . "m";
+    }
+
 	$return =array(
 	"parse" => "full",
 	"response_type" => "in_channel",
 	"attachments"=>array(array(
 		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $hardware . ")", //Fallback for notifications
-		"title" => "Info on System " .  $dataTData["Name"] . " (" . $hardware . ")", 
-		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . date('H:i',mktime(0,$dataTData["UpTime"])) . 
+		"title" => "Info on System " .  $dataTData["Name"] . " (" . $hardware . ")",
+		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . $uptime .
 		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
 		"\nLast User: " . $dataTData["LastUsername"], //Return assigned resources
 		"mrkdwn_in" => array(
