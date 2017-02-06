@@ -2,6 +2,7 @@
 ini_set('display_errors', 1); //Display errors in case something occurs
 header('Content-Type: application/json'); //Set the header to return JSON, required by Slack
 require_once 'lt-config.php';
+require_once 'lt-functions.php';
 
 if(empty($_GET['token']) || ($_GET['token'] != $slacktoken)) die; //If Slack token is not correct, kill the connection. This allows only Slack to access the page for security purposes.
 if(empty($_GET['text'])) die; //If there is no text added, kill the connection.
@@ -111,37 +112,12 @@ if(empty($dataTData))
 {
     if ($timeoutfix == true) {
         $return = array("parse" => "full", "response_type" => "ephemeral","text" => "No computer found named " . $exploded[0]);
+
+        slack($_GET["response_url"], $return); // Post to Slack using the slack function
+        die();
     } else {
         die("No computer found named " . $exploded[0]);
     }
-
-    //Slack Post
-    $ch = curl_init(); //Initiate a curl session_cache_expire
-    $header_data = array("Content-type: application/json");
-    $body = json_encode($return);
-
-    //Create curl array to set the API url, headers, and necessary flags.
-    $curlOpts = array(
-        CURLOPT_URL => $_GET["response_url"],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTPHEADER => $header_data,
-        CURLOPT_POSTFIELDS => $body,
-        CURLOPT_POST => 1,
-        CURLOPT_HEADER => 1,
-    );
-    curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-    $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-    $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-    $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-    // If there was an error, show it
-    if (curl_error($ch)) {
-        die(curl_error($ch));
-    }
-    curl_close($ch);
-    die();
 }
 $dataTData = $dataTData[0];
 
@@ -184,37 +160,12 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
             {
                 if ($timeoutfix == true) {
                     $return = array("parse" => "full", "response_type" => "ephemeral","text" => "No script found named " . $exploded[2]);
+
+                    slack($_GET["response_url"], $return); // Post to Slack using the slack function
+                    die();
                 } else {
                     die("No script found named " . $exploded[2]);
                 }
-
-                //Slack Post
-                $ch = curl_init(); //Initiate a curl session_cache_expire
-                $header_data = array("Content-type: application/json");
-                $body = json_encode($return);
-
-                //Create curl array to set the API url, headers, and necessary flags.
-                $curlOpts = array(
-                    CURLOPT_URL => $_GET["response_url"],
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_HTTPHEADER => $header_data,
-                    CURLOPT_POSTFIELDS => $body,
-                    CURLOPT_POST => 1,
-                    CURLOPT_HEADER => 1,
-                );
-                curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-                $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-                $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-                $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-                // If there was an error, show it
-                if (curl_error($ch)) {
-                    die(curl_error($ch));
-                }
-                curl_close($ch);
-                die();
             }
 
             $textreturn = "";
@@ -238,74 +189,24 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
                 ))
             );
 
-            if (!$timeoutfix) {
+            if ($timeoutfix == true) {
+                slack($_GET["response_url"], $return); // Post to Slack using the slack function
+                die();
+            } else {
                 die(json_encode($return, JSON_PRETTY_PRINT));
             }
-
-            //Slack Post
-            $ch = curl_init(); //Initiate a curl session_cache_expire
-            $header_data = array("Content-type: application/json");
-            $body = json_encode($return);
-
-            //Create curl array to set the API url, headers, and necessary flags.
-            $curlOpts = array(
-                CURLOPT_URL => $_GET["response_url"],
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTPHEADER => $header_data,
-                CURLOPT_POSTFIELDS => $body,
-                CURLOPT_POST => 1,
-                CURLOPT_HEADER => 1,
-            );
-            curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-            $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-            $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-            $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-            // If there was an error, show it
-            if (curl_error($ch)) {
-                die(curl_error($ch));
-            }
-            curl_close($ch);
-            die();
         }
     }
     else
     {
         if ($timeoutfix == true) {
             $return = array("parse" => "full", "response_type" => "ephemeral","text" => "No script specified");
+
+            slack($_GET["response_url"], $return); // Post to Slack using the slack function
+            die();
         } else {
             die("No script specified");
         }
-
-        //Slack Post
-        $ch = curl_init(); //Initiate a curl session_cache_expire
-        $header_data = array("Content-type: application/json");
-        $body = json_encode($return);
-
-        //Create curl array to set the API url, headers, and necessary flags.
-        $curlOpts = array(
-            CURLOPT_URL => $_GET["response_url"],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => $header_data,
-            CURLOPT_POSTFIELDS => $body,
-            CURLOPT_POST => 1,
-            CURLOPT_HEADER => 1,
-        );
-        curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-        $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-        $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-        $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-        // If there was an error, show it
-        if (curl_error($ch)) {
-            die(curl_error($ch));
-        }
-        curl_close($ch);
-        die();
     }
 
     //Block to verify script exists
@@ -342,7 +243,14 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
     $dataTData = json_decode(json_encode($dataTData->value),true);
     if(empty($dataTData))
     {
-        die("No script found with ID " . $exploded[2]);
+        if ($timeoutfix == true) {
+            $return = array("parse" => "full", "response_type" => "ephemeral","text" => "No script found with ID " . $exploded[2]);
+
+            slack($_GET["response_url"], $return); // Post to Slack using the slack function
+            die();
+        } else {
+            die("No script found with ID " . $exploded[2]);
+        }
     }
     $dataTData = $dataTData[0];
 
@@ -390,6 +298,9 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
     {
         if ($timeoutfix == true) {
             $return = array("parse" => "full", "response_type" => "ephemeral","text" => "Successfully set script " . $scriptstring . " to run on " . $clientstring);
+
+            slack($_GET["response_url"], $return); // Post to Slack using the slack function
+            die();
         } else {
             die("Successfully set script " . $scriptstring . " to run on " . $clientstring);
         }
@@ -399,39 +310,14 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
         var_dump($answerTData);
         if ($timeoutfix == true) {
             $return = array("parse" => "full", "response_type" => "ephemeral","text" => "Unknown error occurred. Turn timeoutfix to false in lt-config.php and try again");
+
+            slack($_GET["response_url"], $return); // Post to Slack using the slack function
+            die();
         } else {
             die("Unknown error occurred. Please see above for error data");
         }
     }
 
-
-    //Slack Post
-    $ch = curl_init(); //Initiate a curl session_cache_expire
-    $header_data = array("Content-type: application/json");
-    $body = json_encode($return);
-
-    //Create curl array to set the API url, headers, and necessary flags.
-    $curlOpts = array(
-        CURLOPT_URL => $_GET["response_url"],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTPHEADER => $header_data,
-        CURLOPT_POSTFIELDS => $body,
-        CURLOPT_POST => 1,
-        CURLOPT_HEADER => 1,
-    );
-    curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-    $answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-    $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-    $curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-    // If there was an error, show it
-    if (curl_error($ch)) {
-        die(curl_error($ch));
-    }
-    curl_close($ch);
-    die();
 }
 
 $return="Nothing!"; //Just in case
@@ -489,35 +375,13 @@ else
 	);
 }
 
-if (!$timeoutfix) {
+if ($timeoutfix == true)
+{
+    slack($_GET["response_url"], $return); // Post to Slack using the slack function
+    die();
+}
+else
+{
     die(json_encode($return, JSON_PRETTY_PRINT));
 }
-
-//Slack Post
-$ch = curl_init(); //Initiate a curl session_cache_expire
-$header_data = array("Content-type: application/json");
-$body = json_encode($return);
-
-//Create curl array to set the API url, headers, and necessary flags.
-$curlOpts = array(
-    CURLOPT_URL => $_GET["response_url"],
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTPHEADER => $header_data,
-    CURLOPT_POSTFIELDS => $body,
-    CURLOPT_POST => 1,
-    CURLOPT_HEADER => 1,
-);
-curl_setopt_array($ch, $curlOpts); //Set the curl array to $curlOpts
-
-$answerTData = curl_exec($ch); //Set $answerTData to the curl response to the API.
-$headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);  //Get the header length of the curl response
-$curlBodyTData = substr($answerTData, $headerLen); //Remove header data from the curl string.
-
-// If there was an error, show it
-if (curl_error($ch)) {
-    die(curl_error($ch));
-}
-curl_close($ch);
-
 ?>
