@@ -266,7 +266,7 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
 
     $ch = curl_init(); //Initiate a curl session_cache_expire
 
-    $body = json_encode(array("ScriptID" => $exploded[2], "NextRun" => gmdate("Y-m-d\TH:i:s-06:00", strtotime("+1 minutes"))));
+    $body = json_encode(array("ScriptID" => $exploded[2], "NextRun" => gmdate("Y-m-d\TH:i:s" . $utccode, strtotime("+1 minutes"))));
 
     //Create curl array to set the API url, headers, and necessary flags.
     $curlOpts = array(

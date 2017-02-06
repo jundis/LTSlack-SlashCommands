@@ -8,6 +8,7 @@ $ltuser = "apiuser"; //Enter your LabTech username here.
 $ltpassword = "ENTER PASSWORD"; //Enter your LabTech password here.
 $labtech = "https://lt.domain.tld"; //Enter your LabTech FQDN here.
 $timezone = "America/Chicago"; //Set your timezone here.
+$utccode = "-06:00"; //UTC offset for your timezone.
 $timeoutfix = true; //Only change if you have issues with this posting to Slack.
 
 //Change optional
