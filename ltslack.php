@@ -292,8 +292,6 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
 
     $dataTData = json_decode($curlBodyTData);
 
-    var_dump($dataTData);
-
     if(array_key_exists("value",$dataTData))
     {
         if ($timeoutfix == true) {
