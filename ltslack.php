@@ -294,6 +294,29 @@ if (array_key_exists(1,$exploded) && ($exploded[1]=="script"||$exploded[1]=="run
 
     if(array_key_exists("value",$dataTData))
     {
+        if($usedatabase == 1)
+        {
+            $mysql = mysqli_connect($dbhost, $dbusername, $dbpassword, $dbdatabase);
+            if (!$mysql)
+            {
+                die("Connection Error: " . mysqli_connect_error());
+            }
+
+            $val1 = mysqli_real_escape_string($mysql,$_GET['user_name']);
+            $val2 = mysqli_real_escape_string($mysql,$_GET['text']);
+            $date = date('Y-m-d H:i:s');
+
+            $sql = "INSERT INTO `log` (`id`, `dates`, `slackuser`, `command`) VALUES (NULL, '" . $date . "', '" . $val1 . "', '" . $val2 . "');";
+
+            if(mysqli_query($mysql,$sql))
+            {
+                //Do nothing if successful
+            }
+            else
+            {
+                die("MySQL Error: " . mysqli_error($mysql));
+            }
+        }
         if ($timeoutfix == true) {
             $return = array("parse" => "full", "response_type" => "ephemeral","text" => "Successfully set script " . $scriptstring . " to run on " . $clientstring);
 
