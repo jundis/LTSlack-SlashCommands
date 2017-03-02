@@ -10,6 +10,10 @@ Type /lt [computer name or computer ID] in chat and it will pull relevant inform
 
 Type /lt client [client name] in chat and it will pull the specified client's address and phone/fax number
 
+Type /lt [computer name] script [script name] and it will return a list of scripts that can be run along with their IDs
+
+Type /lt [computer name] script [script ID] and it will execute that script 1 minute from the current time on the specified computer.
+
 # Installation Instructions
 
 1. Download the ltslack.php file and lt-config.php file.
@@ -23,10 +27,23 @@ Type /lt client [client name] in chat and it will pull the specified client's ad
 9. Modify the lt-config.php file with your companies values and timezone.
 10. Test it in Slack!
 
-# API Key Setup
+# Config.php setup
 
-1. Visit http://justanotherpsblog.com/2016/04/01/428/ and complete the powershell script variables at the top.  
-Also available at https://gist.github.com/hematic/4286a68b3ba1d3835c7608e726b1e8d8#file-gistfile1-txt if site is down.
-2. Run the Powershell script.
-3. Copy the resulting key.
-4. Paste it into the $authorization variable in lt-config.php.
+See below for list of variables and what they need to be.
+
+* $slacktoken: Set this to the slack token generated in Step 7 above.
+* $ltuser: Set this to the user account Slack will use for LT lookups and scripts. Must have permissions to any client/computer that you want to work with as well as the ability to run scripts if you want to use that.
+* $ltpassword: Password for above user
+* $labtech: Labtech domain, no slash. Example: https://lt.domain.tld
+* $timezone: Your current timezone in PHP timezone format. List here: http://php.net/manual/en/timezones.php
+* $timeoutfix: Keep it at true unless you're having issues, at which point set to false and it will show error codes
+
+
+* $usedatabase: When set to 1, it will log all script executions to the specified database below. All fields below required if this is set to 1.
+* $dbhost: Database host/IP
+* $dbusername: Your database username, must have add rights, and ideally create database rights unless you create the database yourself.
+* $dbpassword: Password for above MySQL user
+* $dbdatabase: Database name, so you can use on an existing MySQL install
+
+
+* $helpurl: Set to a command list. Defaults to this page
