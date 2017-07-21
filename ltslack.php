@@ -423,6 +423,26 @@ else
     $dnsservers = explode(";", $dnsservers[2]);
     $dnsservers = implode(", ", $dnsservers);
 
+    $sharesraw = explode(":",$dataTData["Shares"]);
+    $shareslist = array();
+    $sharestext = "None";
+    // TO DO STILL
+    foreach($sharesraw as $share)
+    {
+        if(substr($share, -1) == "$")
+        {
+            // Do nothing for now, may use later but for now just drop admin shares
+        }
+        else
+        {
+            $shareslist[] = $share;
+        }
+    }
+    if(empty($shareslist))
+    {
+        $sharestext = implode(", ",$shareslist);
+        $sharestext = "\nShares: " . $sharestext;
+    }
 
 	$return =array(
 	"parse" => "full",
@@ -433,7 +453,7 @@ else
 		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . $uptime .
 		"\nLast User: " . $dataTData["LastUsername"] . " | Idle Time: " . $idletime . //Return last logged in user
         "\n*Network*\nLocal IP: " . $dataTData["LocalAddress"] . " | WAN IP: " . $dataTData["RouterAddress"] . "\nMAC: " . $dataTData["MAC"] . " | RDP Port: " . $dataTData["ManagementPort"] . "\nDNS Servers: " . $dnsservers . //Return network block
-        "\n*System*\nOS: " . $dataTData["OS"] . "\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB" , //Return system block
+        "\n*System*\nOS: " . $dataTData["OS"] . "\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB" . $sharestext, //Return system block
 		"mrkdwn_in" => array(
 			"text",
 			"pretext"
