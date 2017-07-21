@@ -384,6 +384,23 @@ else
 		$hardware = $dataTData["BiosName"];
 	}
 
+    if($dataTData["IdleTime"]==0)
+    {
+        $idletime = "Active";
+    }
+    else if($dataTData["IdleTime"]==-1)
+    {
+        $idletime = "Not logged in";
+    }
+    else
+    {
+        $hours = floor($dataTData["IdleTime"] / 3600);
+        $minutes = floor($dataTData["IdleTime"] / 60 % 60);
+        $seconds = floor($dataTData["IdleTime"] % 60);
+
+        $idletime = $hours . "h " . $minutes . "m " . $seconds . "s";
+    }
+
 	if($dataTData["UpTime"]>=1440)
     {
         $updays = floor($dataTData["UpTime"] / 1440);
@@ -402,6 +419,11 @@ else
         $uptime = $dataTData["UpTime"] . "m";
     }
 
+    $dnsservers = explode(":", $dataTData["DNSInfo"]);
+    $dnsservers = explode(";", $dnsservers[2]);
+    $dnsservers = implode(", ", $dnsservers);
+
+
 	$return =array(
 	"parse" => "full",
 	"response_type" => "in_channel",
@@ -409,10 +431,9 @@ else
 		"fallback" => "Info on System " . $dataTData["Name"] . " (" . $hardware . ")", //Fallback for notifications
 		"title" => "Info on System " .  $dataTData["Name"] . " (" . $hardware . ")",
 		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . $uptime .
-		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
-		"\nLast User: " . $dataTData["LastUsername"] . //Return last logged in user
-        "\n*Network*\nLocal IP: " . $dataTData["LocalAddress"] . " | WAN IP: " . $dataTData["RouterAddress"] . "\nMAC: " . $dataTData["MAC"] . " | RDP Port: " . $dataTData["ManagementPort"] . "\nDNS Server: " . $dataTData["DNSInfo"] . //Return network block
-        "\n*System*\nOS: " . $dataTData["OS"],
+		"\nLast User: " . $dataTData["LastUsername"] . " | Idle Time: " . $idletime . //Return last logged in user
+        "\n*Network*\nLocal IP: " . $dataTData["LocalAddress"] . " | WAN IP: " . $dataTData["RouterAddress"] . "\nMAC: " . $dataTData["MAC"] . " | RDP Port: " . $dataTData["ManagementPort"] . "\nDNS Servers: " . $dnsservers . //Return network block
+        "\n*System*\nOS: " . $dataTData["OS"] . "\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB" , //Return system block
 		"mrkdwn_in" => array(
 			"text",
 			"pretext"
