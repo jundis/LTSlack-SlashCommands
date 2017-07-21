@@ -15,6 +15,10 @@ if ($exploded[0]=="help")
 {
 	die(json_encode(array("parse" => "full", "response_type" => "in_channel","text" => "Please visit " . $helpurl . " for more help information","mrkdwn"=>true)));
 }
+if ($exploded[0]=="scriptlog")
+{
+
+}
 
 //Timeout Fix Block
 if($timeoutfix == true)
@@ -406,7 +410,9 @@ else
 		"title" => "Info on System " .  $dataTData["Name"] . " (" . $hardware . ")",
 		"text" =>  "Last Checkin: " . $dateformat . " | Uptime: " . $uptime .
 		"\nCPU: " . $dataTData["CPUUsage"] . "% | Memory: " . $dataTData["MemoryAvail"] . "MB/" . $dataTData["TotalMemory"] . "MB". //Return "Date Entered / Status" string
-		"\nLast User: " . $dataTData["LastUsername"], //Return assigned resources
+		"\nLast User: " . $dataTData["LastUsername"] . //Return last logged in user
+        "\n*Network*\nLocal IP: " . $dataTData["LocalAddress"] . " | WAN IP: " . $dataTData["RouterAddress"] . "\nMAC: " . $dataTData["MAC"] . " | RDP Port: " . $dataTData["ManagementPort"] . "\nDNS Server: " . $dataTData["DNSInfo"] . //Return network block
+        "\n*System*\nOS: " . $dataTData["OS"],
 		"mrkdwn_in" => array(
 			"text",
 			"pretext"
