@@ -425,20 +425,24 @@ else
 
     $sharesraw = explode(":",$dataTData["Shares"]);
     $shareslist = array();
-    $sharestext = "None";
-    // TO DO STILL
+    $sharestext = "";
+
     foreach($sharesraw as $share)
     {
         if(substr($share, -1) == "$")
         {
             // Do nothing for now, may use later but for now just drop admin shares
         }
+        else if($share == "SYSVOL" || $share == "WSUSTemp" || $share == "WSUSContent" || $share == "ExchangeOAB" || $share == "NETLOGON" || $share == "Public" || $share == "Address" || $share == "SHAREPOINT")
+        {
+            // Ignore common shares
+        }
         else
         {
             $shareslist[] = $share;
         }
     }
-    if(empty($shareslist))
+    if(!empty($shareslist))
     {
         $sharestext = implode(", ",$shareslist);
         $sharestext = "\nShares: " . $sharestext;
