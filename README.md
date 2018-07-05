@@ -1,6 +1,6 @@
 # LTSlack-SlashCommands
 
-**Please note that this is effectively a proof of concept for the LabTech REST API. Due to it's lack of support and documentation by LabTech, it may break at any time with any LT update. Only tested using LT11.**
+#### Note: This project is currently being maintained for bugs only, all further new feature development is being done on the hosted successor at https://mspic.io
 
 This script, when hosted on a PHP supported web server, will act as a bridge between the JSON requests of Slack and the JSON responses of the LabTech REST API.
 
